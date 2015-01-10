@@ -5,6 +5,7 @@
  */
 package com;
 
+import static com.MainGui.EditExistingButtonClicked;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -63,62 +65,99 @@ catch (Exception e)
 }
 
 public String validateMobileNO(String MobileNO, XSSFSheet sheet){
+    isDataAvailable = false;
+         if(MainGui.SaveEditedButtonClicked==true){
+        return MobileNO;
+        }
+    else
+     {
 try 
     {
         patternMob = Pattern.compile(MOBILE_PATTERN);
         matcherMob = patternMob.matcher(MobileNO);
         File file = new File(excelFileName);
+     
         if ((!file.exists())== true ||MobileNO == null){
-        isDataAvailable = true;
+        isDataAvailable = false;
         }
         else {
-        isDataAvailable = isCellContentPresent(sheet, MobileNO);
+        isDataAvailable = isCellContentPresent(sheet, MobileNO);  
         }
-        if (!(MobileNO.equalsIgnoreCase("")) && matcherMob.matches() == true && isDataAvailable == true ) 
-    {
-        Mflag = true;
-        return MobileNO;
-    }
-    else
-    {
-        throw new Exception("Please fill correct Mobile Number");
-    }
-}
-catch (Exception e)
-{
-    JOptionPane.showMessageDialog(null, e.getMessage());
-    return null;
-}
-}
-public String validateEmail(String Email,XSSFSheet sheet){
-    try{
-       patternEmail = Pattern.compile(EMAIL_PATTERN);
-matcherEmail = patternEmail.matcher(Email);
-       File file = new File(excelFileName);
-          if ((!file.exists())==true || Email == null ){
-        isDataAvailable = true;
+        if (EditExistingButtonClicked==false)
+        {
+            if (!(MobileNO.equalsIgnoreCase("")) && matcherMob.matches() == true && isDataAvailable == false ) 
+            {
+                Mflag = true;
+                return MobileNO;
+            }
+            else if (isDataAvailable == true)
+            {
+                JOptionPane.showMessageDialog(null, "Mobile Number already exists !", "Failure", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Mobile Number already exists !");
+            }
+              else 
+            {
+                JOptionPane.showMessageDialog(null, "Please fill correct Mobile Number", "Failure", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Please fill correct Mobile Number");
+            }
         }
-          
-          else {
-              isDataAvailable = isCellContentPresent(sheet, Email);
-          }
-if (matcherEmail.matches()==true && isDataAvailable == true)
-{  
-    Eflag = true;
-    return Email;
 }
-else 
-{
-   JOptionPane.showMessageDialog(null,"Wrong Mail Id Please enter correct emailID");
-}
-    }
-    
     catch(Exception e){
-        JOptionPane.showMessageDialog(null,"Wrong Mail Id Please try again  -  "+e.getMessage());
-    System.out.println("Wrong Mail Id Please try again");
+    JOptionPane.showMessageDialog(null,"Please try again  -  "+e.getMessage());
+    System.out.println("Please try again !!");
     return null;
     }
         return null;
+     }
+        
+    }
+public String validateEmail(String Email,XSSFSheet sheet){
+    isDataAvailable=false;
+     if(MainGui.SaveEditedButtonClicked==true){
+        return Email;
+        }
+    else
+     {
+    try{
+       patternEmail = Pattern.compile(EMAIL_PATTERN);
+       matcherEmail = patternEmail.matcher(Email);
+       File file = new File(excelFileName);
+          if ((!file.exists())==true || Email == null )
+          {
+            isDataAvailable = false;
+          }
+          
+          else
+          {
+              isDataAvailable = isCellContentPresent(sheet, Email);
+          }
+        if (EditExistingButtonClicked==false)
+        {
+            if (matcherEmail.matches()==true && isDataAvailable == false)
+            {  
+                Eflag = true;
+                return Email;
+            }
+            else if(isDataAvailable==true)
+            {
+                JOptionPane.showMessageDialog(null, "Email id Already Exists !", "Failure", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Please fill correct Mail Id");
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null, "Wrong Mail Id Please enter correct emailID", "Failure", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Wrong Mail Id Please enter correct emailID");
+            }
+        }
+    }
+    
+    catch(Exception e){
+    JOptionPane.showMessageDialog(null,"Please try again  -  "+e.getMessage());
+    System.out.println("Error - Please try again !!");
+    return null;
+    }
+     return null;
+   }     
     }
      public void writetoExcel(String Name,String EmailId,String Password, String MobileNo,XSSFSheet sheet,String MailPaswd) throws InvalidFormatException, IOException
  {
@@ -165,13 +204,14 @@ else
      } 
 }
      public static String[] getData(int r,XSSFSheet sheet){
-           String [] str = new String[4];
+           String [] str = new String[6];
            XSSFRow row = sheet.getRow(r);
            int i = 0;
         for (Cell cell : row)
             {
                str[i] = cell.getRichStringCellValue().getString().trim();
                i++;
+               if (i==6) break;
             }   
     return str;
      }
@@ -200,7 +240,7 @@ else
           
             XSSFCell cell4 = row.getCell(4);
           cell4.setCellValue(MailPassswd);
-          System.out.println(MobileNo);
+          System.out.println(MailPassswd);
      }
      public static int findRow(XSSFSheet sheet, String cellContent) {
          try {
@@ -224,17 +264,19 @@ else
     return 0;
 }
      public Boolean isCellContentPresent (XSSFSheet sheet,String content)
-     {
+     { Boo = false;
          try {
               String CellContent = null;
              // Get iterator to all the rows in current sheet
              Iterator<Row> rowIterator = sheet.iterator();
              // Traversing over each row of XLSX file
              while (rowIterator.hasNext()) {
+                 if (Boo == true) break;
                  Row row = rowIterator.next();
                  // For each row, iterate through each columns
                  Iterator<Cell> cellIterator = row.cellIterator();
                  while (cellIterator.hasNext()) {
+                         if (Boo == true) break;
                      Cell cell = cellIterator.next();
                      
                      switch (cell.getCellType()) {
@@ -254,13 +296,25 @@ else
                          //CellContent = null;
                      }
                      if (CellContent.equalsIgnoreCase(content)) {
-                         Boo = true;
-                         throw new Exception("Data Already exists");
+                         if (MainGui.EditExistingButtonClicked==true)
+                         {
+                             break;
+                           
+                         } 
+                        Boo = true;
+                        break;
+                         //else {
+//                         throw new Exception("Data Already exists");
+//                            }
                      } else {
                          Boo = false;
                      }
                  }
                  System.out.println("");
+                  if (MainGui.EditExistingButtonClicked==true && CellContent.equalsIgnoreCase(content))
+                         {
+                             break;
+                         } 
              }
             
          } catch (Exception e) {

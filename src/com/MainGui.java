@@ -34,7 +34,10 @@ private static String pass = "";
 private static String mob = "";
 private static  String Mob_Number = "";
 private static int rowNum = 0;
+public static Boolean EditExistingButtonClicked = false;
+public static Boolean SaveEditedButtonClicked = false;
 /**
+ * 
      * Creates new form MainGui
      */
     public MainGui() {
@@ -262,8 +265,9 @@ private static int rowNum = 0;
                         }
                 mailId = fb.validateEmail(jTextField1.getText(),sheet);
                 pass = fb.validatePassword(jTextField3.getText());
+                sheet = wb.getSheet(sheetName);
                 mob =  fb.validateMobileNO(jFormattedTextField1.getText(),sheet);
-                if(FuntionLibrary.Pflag==true && FuntionLibrary.Mflag == true && FuntionLibrary.Eflag == true)
+                if(mob!=null && mailId !=null && FuntionLibrary.Pflag==true && FuntionLibrary.Mflag == true && FuntionLibrary.Eflag == true)
                 {
                      fb.writetoExcel(jTextField4.getText(),mailId,pass,mob,sheet,jTextField2.getText());
                      FileOutputStream fileOut = new FileOutputStream(excelFileName);
@@ -290,6 +294,7 @@ private static int rowNum = 0;
     }                                        
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        EditExistingButtonClicked = true;
         jButton1.setVisible(false);
         jButton3.setVisible(true);
         jButton4.setVisible(true);
@@ -303,13 +308,14 @@ private static int rowNum = 0;
                 XSSFWorkbook wb = new XSSFWorkbook(fis);
                 Mob_Number = JOptionPane.showInputDialog(null, "Enter Mobile Number to find details");
                 FuntionLibrary fb = new FuntionLibrary();
-                fb.validateMobileNO(Mob_Number,null);
+                fb.validateMobileNO(Mob_Number,wb.getSheet(sheetName));
                 rowNum = FuntionLibrary.findRow(wb.getSheet(FuntionLibrary.sheetName), Mob_Number);
                 String arr[] = FuntionLibrary.getData(rowNum,wb.getSheet(FuntionLibrary.sheetName));
                 jTextField4.setText(arr[0]);
                 jTextField1.setText(arr[1]);
                 jTextField3.setText(arr[2]);
                 jFormattedTextField1.setText(arr[3]);
+                jTextField2.setText(arr[4]);
                } catch (FileNotFoundException ex) {
             Logger.getLogger(MainGui.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -324,6 +330,9 @@ private static int rowNum = 0;
     }                                        
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        SaveEditedButtonClicked = true;
+        jButton1.setVisible(false);
+        jButton2.setVisible(false);
         FileInputStream fis = null;
     try {
         File file = new File(FuntionLibrary.excelFileName);
@@ -356,9 +365,11 @@ private static int rowNum = 0;
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
       jButton4.setVisible(false);
       jButton1.setVisible(true);
+      jButton2.setVisible(true);
       jTextField1.setText("");
       jTextField3.setText("");
       jTextField4.setText("");
+      jTextField2.setText("");
       jFormattedTextField1.setText("");
       jButton3.setVisible(false);
     }                                        
